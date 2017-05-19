@@ -1,0 +1,108 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  CloudFormation template to create AWS Config rules for an account.
+  These Config rules verify the manadatory tags standard.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "CloudTrail Resource Configuration"
+        Parameters: 
+          - BucketName
+          - TopicARN
+    ParameterLabels: 
+      BucketName: 
+        default: "S3 Bucket Name"
+      TopicARN: 
+        default: "SNS Topic ARN"
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Enter the name of the S3 bucket
+    AllowedPattern: ^[-A-Za-z0-9]+$
+  TopicARN:
+    Type: String
+    Description: Enter the ARN of the SNS topic, i.e. arn:aws:sns:<REGION>:<ACCOUNT_NUMBER>:<SNS_TOPIC>
+    Default: arn:aws:sns:
+    AllowedPattern: ^arn:aws:sns:[-a-z0-9]+:[0-9]{12}:[:-A-Za-z0-9]+$
+
+Resources:
+  Role:
+    Type: "AWS::IAM::Role"
+    Properties: 
+      RoleName: !Join ['', ['config-role-', !Ref "AWS::Region"]]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect:  Allow
+            Principal:
+              Service: config.amazonaws.com
+            Action: ['sts:AssumeRole']
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSConfigRole
+  
+  Delivery:
+    Type: "AWS::Config::DeliveryChannel"
+    Properties:
+      Name: default
+      S3BucketName: !Ref BucketName
+      SnsTopicARN: !Ref TopicARN
+
+  Recorder:
+    Type: "AWS::Config::ConfigurationRecorder"
+    Properties:
+      Name: default
+      RecordingGroup: 
+        ResourceTypes: 
+          - "AWS::EC2::Instance"
+          - "AWS::RDS::DBInstance"
+          - "AWS::S3::Bucket"
+      RoleARN: !Join ['', ['arn:aws:iam::', !Ref 'AWS::AccountId', ':role/', !Ref Role]]
+
+  RequiredTagsEC2Instance: 
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "Required-Tags-EC2-Instance"
+      Description: Verify required tags for EC2 Instances
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "REQUIRED_TAGS"
+      Scope: 
+        ComplianceResourceTypes: 
+          - "AWS::EC2::Instance"
+      InputParameters: 
+        tag1Key: CostCenter
+
+  RequiredTagsRDSInstance: 
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "Required-Tags-RDS-DBInstance"
+      Description: Verify required tags for RDS Instances
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "REQUIRED_TAGS"
+      Scope: 
+        ComplianceResourceTypes: 
+          - "AWS::RDS::DBInstance"
+      InputParameters: 
+        tag1Key: CostCenter
+
+  RequiredTagsS3Bucket: 
+    Type: "AWS::Config::ConfigRule"
+    Properties:
+      ConfigRuleName: "Required-Tags-S3-Bucket"
+      Description: Verify required tags for S3 Buckets
+      Source: 
+        Owner: AWS
+        SourceIdentifier: "REQUIRED_TAGS"
+      Scope: 
+        ComplianceResourceTypes: 
+          - "AWS::S3::Bucket"
+      InputParameters: 
+        tag1Key: CostCenter
