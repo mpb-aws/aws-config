@@ -3,7 +3,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >
   CloudFormation template to create AWS Config rules for an account.
-  These Config rules verify the manadatory tags standard.
+  
+  Separate templates are used to configure buckets, topics, recording
+  and delivery for each account that is using AWS Config.
+  
 
 Metadata:
   AWS::CloudFormation::Interface:

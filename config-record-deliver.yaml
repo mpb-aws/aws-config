@@ -2,8 +2,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >
-  CloudFormation template to create AWS Config rules for an account.
-  These Config rules verify the manadatory tags standard.
+  CloudFormation template to configure AWS Config recording and
+  delivery for an account.
+  
+  Separate templates are used to configure buckets, topics and rules
+  for each account that is using AWS Config.
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -64,45 +67,3 @@ Resources:
           - "AWS::RDS::DBInstance"
           - "AWS::S3::Bucket"
       RoleARN: !Join ['', ['arn:aws:iam::', !Ref 'AWS::AccountId', ':role/', !Ref Role]]
-
-  RequiredTagsEC2Instance: 
-    Type: "AWS::Config::ConfigRule"
-    Properties:
-      ConfigRuleName: "Required-Tags-EC2-Instance"
-      Description: Verify required tags for EC2 Instances
-      Source: 
-        Owner: AWS
-        SourceIdentifier: "REQUIRED_TAGS"
-      Scope: 
-        ComplianceResourceTypes: 
-          - "AWS::EC2::Instance"
-      InputParameters: 
-        tag1Key: CostCenter
-
-  RequiredTagsRDSInstance: 
-    Type: "AWS::Config::ConfigRule"
-    Properties:
-      ConfigRuleName: "Required-Tags-RDS-DBInstance"
-      Description: Verify required tags for RDS Instances
-      Source: 
-        Owner: AWS
-        SourceIdentifier: "REQUIRED_TAGS"
-      Scope: 
-        ComplianceResourceTypes: 
-          - "AWS::RDS::DBInstance"
-      InputParameters: 
-        tag1Key: CostCenter
-
-  RequiredTagsS3Bucket: 
-    Type: "AWS::Config::ConfigRule"
-    Properties:
-      ConfigRuleName: "Required-Tags-S3-Bucket"
-      Description: Verify required tags for S3 Buckets
-      Source: 
-        Owner: AWS
-        SourceIdentifier: "REQUIRED_TAGS"
-      Scope: 
-        ComplianceResourceTypes: 
-          - "AWS::S3::Bucket"
-      InputParameters: 
-        tag1Key: CostCenter

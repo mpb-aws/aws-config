@@ -2,9 +2,12 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >
-  CloudFormation template to create a centralized S3 bucket and SNS topic for
-  AWS Config. A separate template is used to setup Config recording, 
-  delivery and rules for each account that is using AWS Config.
+  CloudFormation template to create a centralized S3 bucket and SNS topic
+  for AWS Config. The S3 bucket and SNS topic are exported to allow access
+  by other CloudFormation templates.
+  
+  Separate templates are used to configure recording, delivery and rules
+  for each account that is using AWS Config.
 
 Metadata:
   AWS::CloudFormation::Interface:
